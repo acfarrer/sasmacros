@@ -1,0 +1,21 @@
+%macro gjobsall;
+filename jobs pipe "bjobs -u all -a -w";
+data jobs;
+   infile jobs firstobs=2 dlm=" " missover;
+   length job_id $20. user $20. status $20. queue $20. sub_server $10. ex_server $10. jobname $40. month $20. day $20. time $40. r1 $20. r2 $20. r3 $20.;
+   input job_id $ user $ status $ queue $ sub_server $ ex_server $ jobname $ month $ day $ time $ r1 $ r2 $ r3 $;
+   *if substr(sasgsub_job_status,1,1)="S" then delete;
+   if month="-" then do;
+      jobname=compress(jobname)||"_"||compress(substr(time,8,13));
+	  month=r1;
+	  day=r2;
+	  time=r3;
+   end;
+run;
+title "All Grid Jobs Today";
+proc print data=jobs;
+   var job_id  user status queue sub_server ex_server jobname month day time;
+run;
+title;
+%mend gjobsall;
+
